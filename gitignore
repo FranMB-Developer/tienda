@@ -1,5 +1,5 @@
 # Entorno virtual
-venv/
+pildoras-django/
 
 # Archivos pycache
 __pycache__/
