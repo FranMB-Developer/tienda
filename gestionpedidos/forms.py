@@ -6,3 +6,7 @@ class ArticuloForm(forms.ModelForm):
         model = Articulos
         fields = ['nombre', 'precio', 'seccion']
 
+class BorrarArticuloForm(forms.Form):
+    nombre = forms.CharField(max_length=30, label='Nombre del Artículo a Borrar')
+
+

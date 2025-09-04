@@ -3,8 +3,9 @@
         <h1>Formulario de Artículo</h1>
         <form method="POST">
             {% csrf_token %}
-            {{ formulario.as_p }}
+            {{ formulario.as_table }}
             <button type="submit">Guardar Artículo</button>
         </form>
+        <a href="{% url 'home' %}">Volver al Inicio</a>
     </body>
 </html>

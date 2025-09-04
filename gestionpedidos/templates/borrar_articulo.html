@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Borrar Artículo</title>
+    </head>
+    <body>
+        <h1>Borrar Artículo</h1>
+        <form method="POST">
+            {% csrf_token %}
+            {{ formulario.nombre.label }}: {{ formulario.nombre }}
+            <button type="submit">Borrar Artículo</button>
+        </form>
+        <a href="{% url 'home' %}">Volver al Inicio</a>
+    </body>
+</html>

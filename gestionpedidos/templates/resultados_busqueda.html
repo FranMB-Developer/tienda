@@ -4,12 +4,26 @@
 </head>
 <body>
     <h1>Resultados de Búsqueda para: {{ query }} -> {{ articulos|length }} articulos</h1>
-    <ul>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+        </tr>
         {% for articulo in articulos %}
-            <li>{{ articulo.nombre }} - {{ articulo.precio }}</li>
+            <tr>
+                <td>{{ articulo.id }}</td>
+                <td>{{ articulo.nombre }}</td>
+                <td>{{ articulo.precio }}</td>
+            </tr>
         {% empty %}
-            <li>No se encontraron resultados.</li>
+            <tr>
+                <td colspan="3">No se encontraron resultados.</td>
+            </tr>
         {% endfor %}
-    </ul>
+    </table>
+    <a href="{% url 'buscar_productos' %}">Nueva Búsqueda</a>
+    <a href="{% url 'borrar_articulo' %}">Borrar Artículo</a>
+    <a href="{% url 'home' %}">Volver al Inicio</a>
 </body>
 </html>
