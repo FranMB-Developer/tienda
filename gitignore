@@ -1,1 +1,11 @@
-tfm_app/\n__pychache__/\n*.pyc/n*.sqlite3\n.env
+# Entorno virtual
+venv/
+
+# Archivos pycache
+__pycache__/
+*.pyc
+
+# Archivos de Django
+db.sqlite3
+/static/
+media/
