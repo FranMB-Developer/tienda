@@ -25,4 +25,5 @@ urlpatterns = [
     path('buscar/', views.buscar, name='buscar'),
     path('formulario_articulo/', views.formulario_articulo, name='formulario_articulo'),
     path('borrar_articulo/', views.borrar_articulo, name='borrar_articulo'),
+    path('scrap/', views.scrap_view, name='scrap_view'),
 ]

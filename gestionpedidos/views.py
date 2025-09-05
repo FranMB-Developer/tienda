@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from gestionpedidos.models import Articulos
 from gestionpedidos.forms import ArticuloForm, BorrarArticuloForm
+from .utils_scrap import scrap_rango
+import pandas as pd
+import io
 
 # Create your views here.
 def home(request):
@@ -46,3 +49,42 @@ def borrar_articulo(request):
     else:
         mi_formulario = BorrarArticuloForm()
     return render(request, 'borrar_articulo.html', {'formulario': mi_formulario})
+
+def scrap_view(request):
+    df_html = None
+    fecha_inicio = None
+    fecha_fin = None
+
+    if request.method == "POST":
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+        download = request.POST.get("download")
+
+        if fecha_inicio and fecha_fin:
+            try:
+                df = scrap_rango(fecha_inicio, fecha_fin)
+
+                if df.empty:
+                    df_html = "<p>No se encontraron datos en el rango seleccionado.</p>"
+                elif download:  # descargar CSV
+                    buffer = io.StringIO()
+                    df.to_csv(buffer, index=False, encoding="utf-8")
+                    buffer.seek(0)
+                    response = HttpResponse(
+                        buffer,
+                        content_type='text/csv'
+                    )
+                    response['Content-Disposition'] = (
+                        f'attachment; filename="Demanda-{fecha_inicio}_a_{fecha_fin}.csv"'
+                    )
+                    return response
+                else:  # mostrar en HTML
+                    df_html = df.to_html(classes="table table-striped", index=False)
+            except Exception as e:
+                df_html = f"<p>Error al scrapear: {e}</p>"
+
+    return render(
+        request,
+        "scrap_page.html",
+        {"df_html": df_html, "fecha_inicio": fecha_inicio, "fecha_fin": fecha_fin},
+    )
