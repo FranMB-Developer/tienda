@@ -5,33 +5,54 @@
     <title>Scrap de Demanda</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <style>
-        table th { text-align: left !important; }
-        table td:first-child { text-align: left; }
+        table th {
+            text-align: left !important;
+        }
+        table td:first-child {
+            text-align: left;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body class="p-4">
     <h1>Scrap de Demanda de Energía</h1>
 
-    <!-- Formulario rango de fechas -->
-    <form method="post" class="mb-3">
+    <!-- Formulario para indicar rango de fechas -->
+    <form method="post" class="mb-3" id="scrapForm">
         {% csrf_token %}
         <div class="row">
-            <div class="col">
+            <div class="col-md-6">
                 <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
                 <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
             </div>
-            <div class="col">
+            <div class="col-md-6">
                 <label for="fecha_fin" class="form-label">Fecha fin:</label>
                 <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ fecha_fin }}">
             </div>
         </div>
-        <button type="submit" class="btn btn-primary mt-2">Scrap</button>
+        <button type="submit" class="btn btn-primary mt-3">Scrap</button>
     </form>
 
+    <!-- Spinner de carga -->
+    <div id="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Obteniendo datos, por favor espera...</p>
+    </div>
+
+    {% if error_msg %}
+        <div class="alert alert-danger">{{ error_msg }}</div>
+    {% endif %}
+
     {% if df_html %}
-        <h2>Resultados del {{ fecha_inicio }} al {{ fecha_fin }}</h2>
+        <h2>Resultados desde {{ fecha_inicio }} hasta {{ fecha_fin }}</h2>
         <div class="mb-2">
-            <!-- Botón para descargar CSV -->
+            <!-- Botón de descarga -->
             <form method="post" style="display:inline;">
                 {% csrf_token %}
                 <input type="hidden" name="fecha_inicio" value="{{ fecha_inicio }}">
@@ -43,5 +64,12 @@
             {{ df_html|safe }}
         </div>
     {% endif %}
+
+    <script>
+        // Mostrar spinner cuando se envía el formulario
+        document.getElementById("scrapForm").addEventListener("submit", function() {
+            document.getElementById("loading").style.display = "block";
+        });
+    </script>
 </body>
 </html>

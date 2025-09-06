@@ -5,6 +5,7 @@ from gestionpedidos.forms import ArticuloForm, BorrarArticuloForm
 from .utils_scrap import scrap_rango
 import pandas as pd
 import io
+from datetime import datetime
 
 # Create your views here.
 def home(request):
@@ -54,37 +55,47 @@ def scrap_view(request):
     df_html = None
     fecha_inicio = None
     fecha_fin = None
+    error_msg = None
 
     if request.method == "POST":
         fecha_inicio = request.POST.get("fecha_inicio")
         fecha_fin = request.POST.get("fecha_fin")
         download = request.POST.get("download")
 
-        if fecha_inicio and fecha_fin:
+        # Validación básica
+        if not fecha_inicio or not fecha_fin:
+            error_msg = "Debes indicar una fecha de inicio y una fecha de fin."
+        else:
             try:
-                df = scrap_rango(fecha_inicio, fecha_fin)
+                inicio_date = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
+                fin_date = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
 
-                if df.empty:
-                    df_html = "<p>No se encontraron datos en el rango seleccionado.</p>"
-                elif download:  # descargar CSV
-                    buffer = io.StringIO()
-                    df.to_csv(buffer, index=False, encoding="utf-8")
-                    buffer.seek(0)
-                    response = HttpResponse(
-                        buffer,
-                        content_type='text/csv'
-                    )
-                    response['Content-Disposition'] = (
-                        f'attachment; filename="Demanda-{fecha_inicio}_a_{fecha_fin}.csv"'
-                    )
-                    return response
-                else:  # mostrar en HTML
-                    df_html = df.to_html(classes="table table-striped", index=False)
+                if inicio_date > fin_date:
+                    error_msg = "La fecha de inicio no puede ser posterior a la fecha de fin."
+                else:
+                    # Ejecutamos el scraping
+                    df = scrap_rango(fecha_inicio, fecha_fin)
+
+                    if df.empty:
+                        error_msg = "No se encontraron datos en el rango seleccionado."
+                    elif download:  # descargar CSV
+                        buffer = io.StringIO()
+                        df.to_csv(buffer, index=False, encoding="utf-8")
+                        buffer.seek(0)
+                        response = HttpResponse(
+                            buffer,
+                            content_type="text/csv"
+                        )
+                        response['Content-Disposition'] = f'attachment; filename="Demanda-{fecha_inicio}_a_{fecha_fin}.csv"'
+                        return response
+                    else:  # mostrar en la página
+                        df_html = df.to_html(classes="table table-striped", index=False)
             except Exception as e:
-                df_html = f"<p>Error al scrapear: {e}</p>"
+                error_msg = f"Error al procesar las fechas o scrapear: {e}"
 
-    return render(
-        request,
-        "scrap_page.html",
-        {"df_html": df_html, "fecha_inicio": fecha_inicio, "fecha_fin": fecha_fin},
-    )
+    return render(request, "scrap_page.html", {
+        "df_html": df_html,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "error_msg": error_msg
+    })
