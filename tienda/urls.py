@@ -26,4 +26,9 @@ urlpatterns = [
     path('formulario_articulo/', views.formulario_articulo, name='formulario_articulo'),
     path('borrar_articulo/', views.borrar_articulo, name='borrar_articulo'),
     path('scrap/', views.scrap_view, name='scrap_view'),
+    path('scrap/graph/', views.scrap_view_graph, name='scrap_view_graph'),
+    path('scrap_generacion/', views.scrap_generacion, name='scrap_generacion'),
+    path('scrap_almacenamiento/', views.scrap_almacenamiento, name='scrap_almacenamiento'),
+    path('scrap_precio/', views.scrap_precio, name='scrap_precio'),
 ]
+

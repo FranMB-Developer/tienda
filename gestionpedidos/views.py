@@ -5,7 +5,6 @@ from gestionpedidos.forms import ArticuloForm, BorrarArticuloForm
 from .utils_scrap import scrap_rango
 import pandas as pd
 import io
-from datetime import datetime
 import base64
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -55,81 +54,91 @@ def borrar_articulo(request):
     return render(request, 'borrar_articulo.html', {'formulario': mi_formulario})
 
 def scrap_view(request):
-    df_html = None
-    error_msg = None
-    fecha_inicio, fecha_fin = "", ""
-    total_rows = None
-    chart_base64 = None
+    context = {"data": None, "error": None, "fecha_inicio": "", "fecha_fin": "", "total_rows": 0}
 
     if request.method == "POST":
         fecha_inicio = request.POST.get("fecha_inicio")
         fecha_fin = request.POST.get("fecha_fin")
-        download = request.POST.get("download")
+        context["fecha_inicio"] = fecha_inicio
+        context["fecha_fin"] = fecha_fin
 
         try:
-            # 1) Scrap y filtrado con tu función existente
             df = scrap_rango(fecha_inicio, fecha_fin)
 
             if df.empty:
-                error_msg = "No se encontraron datos en el rango seleccionado."
+                context["error"] = "No se encontraron datos en el rango seleccionado."
             else:
-                # 2) CSV si se pulsa descargar
-                if download:
-                    csv_buffer = io.StringIO()
-                    df.to_csv(csv_buffer, index=False)
-                    response = HttpResponse(csv_buffer.getvalue(), content_type="text/csv")
-                    response["Content-Disposition"] = f'attachment; filename="Demanda-{fecha_inicio}_a_{fecha_fin}.csv"'
+                context["total_rows"] = len(df)
+                request.session["scrap_data"] = df.to_dict("records")
+                request.session["scrap_columns"] = df.columns.tolist()
+
+                if "download_csv" in request.POST:
+                    response = HttpResponse(content_type="text/csv")
+                    filename = f"Demanda-{fecha_inicio}_{fecha_fin}.csv"
+                    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+                    df.to_csv(path_or_buf=response, index=False)
                     return response
 
-                # 3) Tabla con primeras 10 filas
-                total_rows = len(df)
-                df_head = df.head(10)
-                df_html = df_head.to_html(classes="table table-striped", index=False)
-
-                # 4) Gráfica usando solo los datos filtrados en scrap_table_range
-                df_plot = df.copy()
-                df_plot["FechaHora_dt"] = pd.to_datetime(df_plot["Fecha"] + " " + df_plot["Hora"], format="%d/%m/%Y %H:%M", errors="coerce")
-
-                # Filtrar de nuevo por seguridad (opcional)
-                start_dt = pd.to_datetime(fecha_inicio, format="%Y-%m-%d")
-                end_dt = pd.to_datetime(fecha_fin, format="%Y-%m-%d") + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
-                df_plot = df_plot.loc[(df_plot["FechaHora_dt"] >= start_dt) & (df_plot["FechaHora_dt"] <= end_dt)]
-                df_plot = df_plot.sort_values("FechaHora_dt")
-
-                if not df_plot.empty:
-                    fig, ax = plt.subplots(figsize=(12, 5))
-                    ax.bar(df_plot["FechaHora_dt"], df_plot["Real"], color="steelblue", label="Real (MW)")
-
-                    # Eje X: cada 6 horas, mostrar día + hora
-                    ax.xaxis.set_major_locator(mdates.HourLocator(interval=6))
-                    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m\n%H:%M"))
-
-                    ax.set_xlabel("Fecha y hora")
-                    ax.set_ylabel("Potencia (MW)")
-                    ax.set_title(f"Demanda real {fecha_inicio} a {fecha_fin}")
-                    ax.legend()
-
-                    plt.xticks(rotation=0, ha="center", fontsize=8)
-                    plt.tight_layout()
-
-                    buf = io.BytesIO()
-                    fig.savefig(buf, format="png")
-                    buf.seek(0)
-                    chart_base64 = base64.b64encode(buf.read()).decode("utf-8")
-                    plt.close(fig)
-                else:
-                    chart_base64 = None
+                # Mostrar solo 10 primeras filas
+                context["data"] = df.head(10).to_html(
+                    classes="table table-striped table-bordered text-start",
+                    index=False,
+                    justify="left"
+                )
 
         except Exception as e:
-            error_msg = f"Error en el scraping: {e}"
+            context["error"] = f"Error en el scraping: {e}"
 
+    return render(request, "scrap_page.html", context)
 
+def scrap_view_graph(request):
+    # Recuperamos datos de la sesión
+    data = request.session.get("scrap_data")
+    columns = request.session.get("scrap_columns")
 
-    return render(request, "scrap_page.html", {
-        "df_html": df_html,
-        "fecha_inicio": fecha_inicio,
-        "fecha_fin": fecha_fin,
-        "error_msg": error_msg,
-        "total_rows": total_rows,
-        "chart_base64": chart_base64,
-    })
+    if not data or not columns:
+        return render(request, "scrap_page.html", {"error": "No hay datos para visualizar."})
+
+    df = pd.DataFrame(data, columns=columns)
+
+    # Convertimos Fecha + Hora a datetime
+    df["FechaHora"] = pd.to_datetime(df["Fecha"] + " " + df["Hora"], format="%d/%m/%Y %H:%M")
+
+    # Ordenamos por FechaHora
+    df = df.sort_values("FechaHora")
+
+    # Generar gráfico
+    fig, ax = plt.subplots(figsize=(12,5))
+    ax.bar(df["FechaHora"], df["Real"], color="skyblue", label="Real")
+    ax.plot(df["FechaHora"], df["Prevista"], color="green", marker='o', label="Prevista")
+    ax.plot(df["FechaHora"], df["Programada"], color="red", marker='o', label="Programada")
+
+    # Formateamos eje X con intervalos de 12 horas
+    start = df["FechaHora"].iloc[0].replace(hour=0, minute=0)
+    end = df["FechaHora"].iloc[-1].replace(hour=23, minute=55)
+    ax.set_xlim(start, end)
+    ax.set_xticks(pd.date_range(start=start, end=end, freq="12H"))
+    ax.set_xlabel("Tiempo")
+    ax.set_ylabel("Potencia (MW)")
+    ax.legend()
+    fig.autofmt_xdate(rotation=45)
+
+    # Guardamos gráfico en memoria para mostrar en template
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    graph_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    buf.close()
+    plt.close(fig)
+
+    return render(request, "scrap_graph.html", {"graph": graph_base64})
+
+def scrap_generacion(request):
+    return HttpResponse("Página de información sobre generación eléctrica. (Contenido pendiente)")
+
+def scrap_almacenamiento(request):
+    return HttpResponse("Página de información sobre almacenamiento eléctrico. (Contenido pendiente)")
+
+def scrap_precio(request):
+    return HttpResponse("Página de información sobre precios eléctricos. (Contenido pendiente)")

@@ -1,15 +1,20 @@
-<html>
-    <head>
-        <title>Home</title>
-    </head>
-    <body>
-        <h1>Bienvenido a la Tienda</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'buscar_productos' %}">Buscar Productos</a></li>
-                <li><a href="{% url 'formulario_articulo' %}">Agregar Artículo</a></li>
-                <li><a href="{% url 'borrar_articulo' %}">Borrar Artículo</a></li>
-            </ul>
-        </nav>
-    </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Datos Energía</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+    <div class="container text-center">
+        <h1 class="mb-5">Datos Energía</h1>
+
+        <div class="list-group">
+            <a href="{% url 'scrap_view' %}" class="list-group-item list-group-item-action">Scrapeo de Demanda</a>
+            <a href="{% url 'scrap_generacion' %}" class="list-group-item list-group-item-action">Scrapeo de Generación</a>
+            <a href="{% url 'scrap_almacenamiento' %}" class="list-group-item list-group-item-action">Scrapeo de Almacenamiento</a>
+            <a href="{% url 'scrap_precio' %}" class="list-group-item list-group-item-action">Scrapeo de Precio</a>
+        </div>
+    </div>
+</body>
 </html>
