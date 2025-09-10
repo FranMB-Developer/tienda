@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualización Demanda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+
+    <h2 class="mb-4">Visualización de Demanda Eléctrica</h2>
+
+    <!-- Tarjetas estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Máximo</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.max_val }} MW</h5>
+                    <p class="card-text">Hora: {{ stats.hora_max }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Mínimo</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.min_val }} MW</h5>
+                    <p class="card-text">Hora: {{ stats.hora_min }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Media</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.mean_val }} MW</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="text-center mb-4">
+        <img src="data:image/png;base64,{{ graph }}" alt="Gráfico de demanda" class="img-fluid">
+    </div>
+
+    <div class="text-center">
+        <a href="javascript:history.back()" class="btn btn-secondary">Volver</a>
+    </div>
+
+</body>
+</html>

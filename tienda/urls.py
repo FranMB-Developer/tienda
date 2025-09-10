@@ -19,16 +19,13 @@ from django.urls import path
 from gestionpedidos import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
-    path('buscar_productos/', views.busqueda_productos, name='buscar_productos'),
-    path('buscar/', views.buscar, name='buscar'),
-    path('formulario_articulo/', views.formulario_articulo, name='formulario_articulo'),
-    path('borrar_articulo/', views.borrar_articulo, name='borrar_articulo'),
-    path('scrap/', views.scrap_view, name='scrap_view'),
-    path('scrap/graph/', views.scrap_view_graph, name='scrap_view_graph'),
-    path('scrap_generacion/', views.scrap_generacion, name='scrap_generacion'),
-    path('scrap_almacenamiento/', views.scrap_almacenamiento, name='scrap_almacenamiento'),
-    path('scrap_precio/', views.scrap_precio, name='scrap_precio'),
+    path('', views.home, name='home'),
+    path('scrap_demanda/', views.scrap_demanda_view, name='scrap_demanda'),
+    path('scrap_generacion/', views.scrap_generacion_view, name='scrap_generacion'),
+    path('scrap_almacenamiento/', views.scrap_almacenamiento_view, name='scrap_almacenamiento'),
+    path('scrap_precio/', views.scrap_precio_view, name='scrap_precio'),
+    path('scrap_view_graph/', views.scrap_view_graph, name='scrap_view_graph'),
+    path("scrap_view_graph_precio/", views.scrap_graph_precio_view, name="scrap_view_graph_precio"),
 ]
 
