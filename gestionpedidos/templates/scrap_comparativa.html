@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .spinner-border { display: none; margin-left: 10px; }
+    </style>
+</head>
+<body class="container">
+    <h1>{{ titulo }} &nbsp; <a href="{% url 'home' %}" class="btn btn-secondary">Volver</a> </h1>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" id="form-comparativa">
+        {% csrf_token %}
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Fecha inicio:</label>
+                <input type="date" name="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-3">
+                <label>Fecha fin:</label>
+                <input type="date" name="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-3">
+                <label>Dato 1:</label>
+                <select name="dato1" class="form-select">
+                    <option value="demanda" {% if dato1 == "demanda" %}selected{% endif %}>Demanda</option>
+                    <option value="generacion-renovables" {% if dato1 == "generacion-renovables" %}selected{% endif %}>Generación - Renovables</option>
+                    <option value="generacion-no_renovables" {% if dato1 == "generacion-no_renovables" %}selected{% endif %}>Generación - No renovables</option>
+                    <option value="generacion-todos" {% if dato1 == "generacion-todos" %}selected{% endif %}>Generación - Todos</option>
+                    <option value="precio" {% if dato1 == "precio" %}selected{% endif %}>Precio</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>Dato 2:</label>
+                <select name="dato2" class="form-select">
+                    <option value="demanda" {% if dato2 == "demanda" %}selected{% endif %}>Demanda</option>
+                    <option value="generacion-renovables" {% if dato2 == "generacion-renovables" %}selected{% endif %}>Generación - Renovables</option>
+                    <option value="generacion-no_renovables" {% if dato2 == "generacion-no_renovables" %}selected{% endif %}>Generación - No renovables</option>
+                    <option value="generacion-todos" {% if dato2 == "generacion-todos" %}selected{% endif %}>Generación - Todos</option>
+                    <option value="precio" {% if dato2 == "precio" %}selected{% endif %}>Precio</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" name="filtrar" class="btn btn-primary">Filtrar</button>
+        <div class="spinner-border text-primary" role="status" id="spinner">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+
+        {% if data %}
+            <button type="submit" name="download_csv" class="btn btn-success ms-2">Descargar CSV</button>
+            <a href="{% url 'scrap_comparativa_graph_view' %}" class="btn btn-info ms-2">Ver Gráfica</a>
+        {% endif %}
+    </form>
+
+    {% if data %}
+        <h5 class="mt-4">Datos comparativos</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        {% for col in data.0.keys %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            {% for val in row.values %}
+                                <td>{{ val }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <script>
+        const form = document.getElementById('form-comparativa');
+        const spinner = document.getElementById('spinner');
+        form.addEventListener('submit', () => { spinner.style.display = 'inline-block'; });
+    </script>
+</body>
+</html>

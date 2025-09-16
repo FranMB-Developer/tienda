@@ -15,14 +15,10 @@
         <h1 class="mb-4">
             {% if request.resolver_match.url_name == 'scrap_demanda' %}
                 Scraping Demanda eléctrica REE
-            {% elif request.resolver_match.url_name == 'scrap_generacion' %}
-                Scraping Generación eléctrica REE
             {% elif request.resolver_match.url_name == 'scrap_almacenamiento' %}
                 Scraping Almacenamiento REE
-            {% else %}
-                Scraping Datos REE
             {% endif %}
-        </h1>
+         &nbsp; <a href="{% url 'home' %}" class="btn btn-secondary">Volver</a> </h1>
 
         <form method="post" id="scrapForm">
             {% csrf_token %}

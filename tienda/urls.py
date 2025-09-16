@@ -27,5 +27,7 @@ urlpatterns = [
     path('scrap_precio/', views.scrap_precio_view, name='scrap_precio'),
     path('scrap_view_graph/', views.scrap_view_graph, name='scrap_view_graph'),
     path("scrap_view_graph_precio/", views.scrap_graph_precio_view, name="scrap_view_graph_precio"),
+    path("scrap_comparativa/", views.scrap_comparativa_view, name="scrap_comparativa"),
+    path("scrap_view_graph_comparativa/", views.scrap_comparativa_graph_view, name="scrap_comparativa_graph_view"),
 ]
 
